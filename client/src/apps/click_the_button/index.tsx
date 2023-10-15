@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import './index.css'
 import axios from 'axios';
 
-const getClickCountUrl = 'www.ethanbunce.com/api/click-the-button/count'
-const clickUrl = 'www.ethanbunce.com/api/click-the-button/click'
+const getClickCountUrl = 'http://www.ethanbunce.com/api/click-the-button/count'
+const clickUrl = 'http://www.ethanbunce.com/api/click-the-button/click'
 
 // const getClickCountUrl = 'http://localhost:5000/api/click-the-button/count'
 // const clickUrl = 'http://localhost:5000/api/click-the-button/click'
