@@ -1,16 +1,3 @@
-// const express = require("express");
-// const app = express();
-// const session = require('express-session');
-// const cors = require("cors");
-// const routes = require('./routes');
-// const bodyParser = require("body-parser");
-// // const configDatabase = require("./database.js");
-// const dotenv = require("dotenv");
-// // const MongoDBStore = require('connect-mongodb-session')(session);
-
-// // ... other imports 
-// const path = require("path")
-
 import express from 'express';
 import session from 'express-session';
 import cors from 'cors';
