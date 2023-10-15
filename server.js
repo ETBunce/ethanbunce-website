@@ -1,15 +1,31 @@
-const express = require("express");
-const app = express();
-const session = require('express-session');
-const cors = require("cors");
-const routes = require('./routes');
-const bodyParser = require("body-parser");
-// const configDatabase = require("./database.js");
-const dotenv = require("dotenv");
-// const MongoDBStore = require('connect-mongodb-session')(session);
+// const express = require("express");
+// const app = express();
+// const session = require('express-session');
+// const cors = require("cors");
+// const routes = require('./routes');
+// const bodyParser = require("body-parser");
+// // const configDatabase = require("./database.js");
+// const dotenv = require("dotenv");
+// // const MongoDBStore = require('connect-mongodb-session')(session);
 
-// ... other imports 
-const path = require("path")
+// // ... other imports 
+// const path = require("path")
+
+import express from 'express';
+import session from 'express-session';
+import cors from 'cors';
+import routes from './routes/routes.js'
+import bodyParser from 'body-parser';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+
+const app = express();
+
+// Figured out the following code from https://flaviocopes.com/fix-dirname-not-defined-es-module-scope/
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 
 
