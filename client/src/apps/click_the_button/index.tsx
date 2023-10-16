@@ -22,7 +22,6 @@ const ClickButtonApp = () => {
         // setClickCount(clickCount + 1)
         axios.post(clickUrl)
             .then(result => {
-                console.log(result);
                 setClickCount(result.data);
             }).catch(error => {
                 console.log(error);
