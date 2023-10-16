@@ -18,8 +18,7 @@ const ClickButtonApp = () => {
     const [clickCount, setClickCount] = useState(0);
 
     const onClick = () => {
-        console.log('api url: ' + clickUrl);
-        // setClickCount(clickCount + 1)
+        setClickCount(clickCount + 1)
         axios.post(clickUrl)
             .then(result => {
                 setClickCount(result.data);
@@ -32,7 +31,9 @@ const ClickButtonApp = () => {
         const interval = setInterval(() => {
             axios.get(getClickCountUrl)
                 .then(result => {
-                    setClickCount(result.data);
+                    if (result.data > clickCount) {
+                        setClickCount(result.data);
+                    }
                 })
                 .catch(error => {
                     console.log(error);
