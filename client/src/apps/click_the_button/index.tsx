@@ -17,13 +17,18 @@ const ClickButtonApp = () => {
 
     const [clickCount, setClickCount] = useState(0);
 
+    const updateCount = (newCount) => {
+        newCount = Number(newCount);
+        if (newCount > clickCount) {
+            setClickCount(newCount);
+        }
+    }
+
     const onClick = () => {
         setClickCount(clickCount + 1)
         axios.post(clickUrl)
             .then(result => {
-                if (result.data > clickCount) {
-                    setClickCount(result.data);
-                }
+                updateCount(result.data);
             }).catch(error => {
                 console.log(error);
             })
@@ -33,9 +38,7 @@ const ClickButtonApp = () => {
         const interval = setInterval(() => {
             axios.get(getClickCountUrl)
                 .then(result => {
-                    if (result.data > clickCount) {
-                        setClickCount(result.data);
-                    }
+                    updateCount(result.data);
                 })
                 .catch(error => {
                     console.log(error);
