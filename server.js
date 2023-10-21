@@ -1,11 +1,14 @@
+// System
+import {} from 'dotenv/config';
 import express from 'express';
 import session from 'express-session';
 import cors from 'cors';
-import routes from './routes/routes.js'
 import bodyParser from 'body-parser';
-import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
+// App
+import routes from './routes/routes.js'
 
 
 const app = express();
@@ -14,14 +17,11 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-
+// Middleware
 
 // Config
 const PORT = process.env.PORT || 5000;
 
-// Middleware
-dotenv.config();
-// configDatabase();
 
 // ... other app.use middleware 
 app.use(express.static(path.join(__dirname, "client", "dist")))
@@ -30,7 +30,6 @@ app.use(express.json({ extended: false }));
 app.use(cors({ origin: true, credentials: true }));
 app.use(bodyParser.text());
 app.use(bodyParser.json());
-
 
 //Session setup
 // const store = new MongoDBStore({
@@ -58,7 +57,6 @@ app.use('/', routes);
 
 // Listen
 
-// Right before your app.listen(), add this:
 app.get("*", (req, res) => {
     res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
 });

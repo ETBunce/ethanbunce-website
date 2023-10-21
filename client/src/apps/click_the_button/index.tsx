@@ -19,36 +19,50 @@ const ClickButtonApp = () => {
 
     const updateCount = (newCount) => {
         newCount = Number(newCount);
-        if (newCount > clickCount) {
+        const oldCount = Number(clickCount);
+        if (newCount > oldCount) {
+            console.log(`${newCount} > ${oldCount}`);
             setClickCount(newCount);
+        } else {
+            console.log(`${newCount} <= ${oldCount}`);
         }
+    }
+
+    const fetchCount = () => {
+        axios.get(getClickCountUrl)
+            .then(result => {
+                updateCount(result.data);
+            })
+            .catch(error => {
+                console.log(error);
+            })
     }
 
     const onClick = () => {
         setClickCount(clickCount + 1)
         axios.post(clickUrl)
-            .then(result => {
-                updateCount(result.data);
+            .then((result) => {
+                console.log('click submitted');
+                setClickCount(result.data);
             }).catch(error => {
                 console.log(error);
             })
     }
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            axios.get(getClickCountUrl)
-                .then(result => {
-                    updateCount(result.data);
-                })
-                .catch(error => {
-                    console.log(error);
-                })
-        }, 1000);
+        console.log('click count changed: ', clickCount);
 
-        return () => {
-            clearInterval(interval);
-        }
-    }, [])
+        const interval = setInterval(() => {
+            console.log('in interval: count is ' + clickCount);
+            fetchCount();
+        }, 2000);
+
+        return () => clearInterval(interval);
+
+    }, [clickCount]);
+
+    useEffect(() => {
+    }, [clickCount])
 
     return (
         <>
