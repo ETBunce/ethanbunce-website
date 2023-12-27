@@ -10,19 +10,27 @@ const PortfolioListItem = (item: PortfolioItem) => {
             <div className='row justify-content-center'>
                 <div className='col-md-4 text-md-end text-center'>
                     <a href={"/portfolio/" + item.name}><img className='thumbnail'
-                        src={"/Portfolio/AlgoGauge/" + item.image} /></a>
+                        src={item.image} /></a>
                 </div>
-                <div className='col-md-8'>
-                    {item.summary}
+                <div className='col-md-6'>
+                    <div className='m-md-0 m-3'>
+                        {item.summary}
+                    </div>
                 </div>
+                <div className='col-md-2'>
+                    <div className='d-flex justify-content-center'>
+                        <a className='go-button btn btn-success m-2' href={"/portfolio/" + item.name}>
+                            Go
+                        </a>
+                    </div>
+                </div>
+
             </div>
         </>
     )
 }
 
 const Portfolio = () => {
-
-    console.log('base url: ', import.meta.env.BASE_URL);
 
     return (
         <>
@@ -31,7 +39,8 @@ const Portfolio = () => {
                     <h1 className='text-center'>Portfolio</h1>
                     <h4 className='subtitle text-center'>Ethan Bunce</h4>
                     <div className='container'>
-                        {PortfolioListItem(PortfolioItems[0])}
+                        {PortfolioListItem(PortfolioItems.PortfolioSite)}
+                        {PortfolioListItem(PortfolioItems.AlgoGauge)}
                         <hr />
                     </div>
 

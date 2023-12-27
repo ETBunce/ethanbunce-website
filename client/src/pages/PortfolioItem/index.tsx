@@ -1,4 +1,10 @@
 import { useParams } from "react-router-dom";
+import PortfolioItems from "../../PortfolioItems/AllPortfolioItems";
+import AlgoGaugePage from "./PortfolioItemPages/AlgoGauge";
+
+const pages = {
+    AlgoGauge: <AlgoGaugePage />
+}
 
 const PortfolioItem = () => {
 
@@ -9,7 +15,16 @@ const PortfolioItem = () => {
     return (
         <>
             <div>
-                <h1>{portfolioItem}</h1>
+                {portfolioItem ?
+                    <>
+                        <div className="m-3"><a href="/portfolio">Back to portfolio</a></div>
+
+                        <h1 className="text-center">{PortfolioItems[portfolioItem].title}</h1>
+                        {pages[portfolioItem]}
+                    </>
+                    :
+                    ''
+                }
             </div>
         </>
     );
