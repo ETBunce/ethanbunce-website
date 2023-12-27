@@ -10,7 +10,7 @@ const PortfolioListItem = (item: PortfolioItem) => {
             <div className='row justify-content-center'>
                 <div className='col-md-4 text-md-end text-center'>
                     <a href={"/portfolio/" + item.name}><img className='thumbnail'
-                        src={"/public/Portfolio/AlgoGauge/" + item.image} /></a>
+                        src={"/Portfolio/AlgoGauge/" + item.image} /></a>
                 </div>
                 <div className='col-md-8'>
                     {item.summary}
