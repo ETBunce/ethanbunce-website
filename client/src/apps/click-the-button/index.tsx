@@ -4,12 +4,6 @@ import axios from 'axios';
 
 const apiUrl = import.meta.env.VITE_API_URL;
 
-// const getClickCountUrl = 'http://www.ethanbunce.com/api/click-the-button/count'
-// const clickUrl = 'http://www.ethanbunce.com/api/click-the-button/click'
-
-// const getClickCountUrl = 'http://localhost:5000/api/click-the-button/count'
-// const clickUrl = 'http://localhost:5000/api/click-the-button/click'
-
 const getClickCountUrl = apiUrl + 'click-the-button/count'
 const clickUrl = apiUrl + 'click-the-button/click'
 
@@ -29,6 +23,7 @@ const ClickButtonApp = () => {
     }
 
     const fetchCount = () => {
+        console.log('api url: ', apiUrl);
         axios.get(getClickCountUrl)
             .then(result => {
                 updateCount(result.data);

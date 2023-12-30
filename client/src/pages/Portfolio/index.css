@@ -1,0 +1,15 @@
+.thumbnail {
+    width: 200px;
+    box-shadow: 2px 2px 5px gray;
+    border: 1px solid;
+    border-radius: 5px;
+    border-color: rgba(0, 0, 0, 0.1);   
+}
+
+.subtitle {
+    color: rgb(148, 148, 148);
+}
+
+.go-button {
+    width: 100px;
+}
