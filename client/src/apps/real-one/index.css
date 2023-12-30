@@ -1,0 +1,13 @@
+#lobby-list-container {
+    background-color: rgba(0, 0, 0, 0.103);
+    width: 100%;
+    max-width: 600px;
+}
+
+#create-lobby-button {
+    padding: 5px;
+    width: auto;
+    height: auto;
+    margin: 10px;
+    border-radius: 4px;
+}

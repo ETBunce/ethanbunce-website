@@ -1,5 +1,5 @@
 import express from 'express';
-import conn from '../../database/connections/click-the-button.js';
+import conn from '../../../database/connections/click-the-button.js';
 
 const countModel = conn.model('Count');
 
@@ -28,19 +28,6 @@ router.post('/click', (req, res) => {
             res.send();
         })
 })
-
-
-// let count = 0;
-
-// router.get('/count', (req, res) => {
-//     res.send(count.toString());
-// });
-
-// router.post('/click', (req, res) => {
-//     count++;
-//     res.send(count.toString());
-// })
-
 
 
 export default router;

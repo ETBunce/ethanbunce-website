@@ -1,0 +1,9 @@
+.ul-lobby-list {
+    list-style-type: none;
+    margin: 10px;
+    padding: 0;
+}
+
+.li-lobby-entry {
+    margin: 5px;
+}

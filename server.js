@@ -1,35 +1,37 @@
 // System
-import {} from 'dotenv/config';
+import { } from 'dotenv/config';
 import express from 'express';
 import session from 'express-session';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import path from 'path';
 import { fileURLToPath } from 'url';
-
-// App
+import { Server } from 'socket.io';
+import { createServer } from 'http';
 import routes from './routes/routes.js'
 
-
-const app = express();
-
+// Config
+const PORT = process.env.PORT || 5000;
 // Figured out the following code from https://flaviocopes.com/fix-dirname-not-defined-es-module-scope/
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Middleware
-
-// Config
-const PORT = process.env.PORT || 5000;
-
-
-// ... other app.use middleware 
+const app = express();
+const httpServer = createServer(app);
 app.use(express.static(path.join(__dirname, "client", "dist")))
 
 app.use(express.json({ extended: false }));
 app.use(cors({ origin: true, credentials: true }));
 app.use(bodyParser.text());
 app.use(bodyParser.json());
+
+// Socket setup
+const io = new Server(httpServer);
+io.on("connection", socket => {
+    console.log("new connection!");
+})
+
 
 //Session setup
 // const store = new MongoDBStore({
@@ -51,6 +53,7 @@ app.use(bodyParser.json());
 //     saveUninitialized: true
 // }));
 
+
 // Routes
 app.use('/', routes);
 
@@ -61,4 +64,4 @@ app.get("*", (req, res) => {
     res.sendFile(path.join(__dirname, "client", "dist", "index.html"));
 });
 
-app.listen(PORT, () => { console.log("server is running on http://localhost:" + PORT); });
+httpServer.listen(PORT, () => { console.log("server is running on http://localhost:" + PORT); });
