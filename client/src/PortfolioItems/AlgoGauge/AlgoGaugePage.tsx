@@ -1,4 +1,4 @@
-import './index.css'
+import style from '../page.module.css'
 
 const AlgoGaugePage = () => {
     return (
@@ -16,11 +16,11 @@ const AlgoGaugePage = () => {
                 <div>Daxton Butler - General</div>
             </div>
             <div className='text-center'>
-                <img className="page-image" src="/Portfolio/AlgoGauge/AlgoGaugeHome.png" />
-                <img className="page-image" src="/Portfolio/AlgoGauge/AlgoGaugeExperimentRunning.png" />
-                <img className="page-image" src="/Portfolio/AlgoGauge/AlgoGaugeQueue.png" />
-                <img className="page-image" src="/Portfolio/AlgoGauge/AlgoGaugeHistory.png" />
-                <img className="page-image" src="/Portfolio/AlgoGauge/AlgoGaugeResults.png" />
+                <img className={style['page-image']} src="/Portfolio/AlgoGauge/AlgoGaugeHome.png" />
+                <img className={style['page-image']} src="/Portfolio/AlgoGauge/AlgoGaugeExperimentRunning.png" />
+                <img className={style['page-image']} src="/Portfolio/AlgoGauge/AlgoGaugeQueue.png" />
+                <img className={style['page-image']} src="/Portfolio/AlgoGauge/AlgoGaugeHistory.png" />
+                <img className={style['page-image']} src="/Portfolio/AlgoGauge/AlgoGaugeResults.png" />
             </div >
         </>
     );

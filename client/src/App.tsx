@@ -19,7 +19,7 @@ function App() {
         <Route path="/portfolio" element={<Portfolio />} />
         <Route path="/apps" element={<SiteApps />} />
         <Route path="/apps/click-the-button" element={<ClickTheButton />} />
-        <Route path="/portfolio/:portfolioItem" element={<PortfolioItem />} />
+        <Route path="/portfolio-item/:portfolioItem" element={<PortfolioItem />} />
         <Route path="/apps/real-one" element={<RealOne />} />
       </Routes>
     </>
