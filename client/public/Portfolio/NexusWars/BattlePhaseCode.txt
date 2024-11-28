@@ -1,0 +1,33 @@
+function PieceAction(piece)
+    --This function calls relevent functions for the piece to enact commands
+end
+
+
+function module.BattlePhase(turn)
+	
+	--Shuffle the pieces
+	orderedPieces = {}
+	for i, piece in pairs(board.GetAllPieces()) do
+		table.insert(orderedPieces, math.random(1, #orderedPieces + 1), piece)
+	end
+	
+	--Perform the actions
+	local stuck = true 
+	local yieldCount = 50
+	repeat
+		stuck = true
+		for i, piece in pairs(orderedPieces) do
+			if piece.dead then continue end
+			if yieldCount == 0 then
+				wait()
+				yieldCount = 50
+			else
+				yieldCount = yieldCount - 1
+			end
+			if PieceAction(piece) then
+				stuck = false
+			end
+		end
+	until stuck
+	
+end

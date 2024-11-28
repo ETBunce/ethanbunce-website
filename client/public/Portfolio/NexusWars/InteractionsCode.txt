@@ -1,0 +1,208 @@
+--TAGS
+local gl = script.Parent
+local rs = game:GetService('ReplicatedStorage')
+local mods = rs:WaitForChild('Modules')
+
+--REQUIRE
+local GetCounter = require(mods:WaitForChild('GetCounter'))
+local board = require(gl:WaitForChild('Board'))
+local staticPieceDatabase = require(gl:WaitForChild('StaticPieceDatabase'))
+local pieceModels = require(gl:WaitForChild('PieceModels'))
+local visuals = require(gl:WaitForChild('Visuals'))
+
+local module = {}
+
+--VARIABLES
+
+local interactions = {}
+local playerVisualsFinished = {}
+
+--FUNCTIONS
+
+function AreAllPlayersFinished()
+	for player,finished in pairs(playerVisualsFinished) do
+		if not finished then
+			return false
+		end
+	end
+	return true
+end
+
+--MODULE
+
+function module.Bookmark()
+	local bookmark = GetCounter()
+	table.insert(interactions, bookmark)
+	return bookmark
+end
+
+function module.AddGlobalInteraction(action : string, coordinatesInvolved : any, options: any)
+	local duration = 1
+	local newInteraction = {
+		action = action,
+		controllerId = 'Global',
+		coordinatesInvolved = coordinatesInvolved,
+		options = options,
+		duration = duration,
+	}
+	table.insert(interactions, newInteraction)
+end
+
+--TODO: swap coordinatesInvolved and options for better convenience in the future
+function module.AddInteraction(action : string, controllerPiece : any, coordinatesInvolved : any, options : any, bookmark : any, duration : number, controllerStaticId : string)
+	duration = duration or 1
+	coordinatesInvolved = coordinatesInvolved or {}
+	if not table.find(coordinatesInvolved, controllerPiece.coordinates) then
+		table.insert(coordinatesInvolved, controllerPiece.coordinates)
+	end
+	local newInteraction = {
+		action = action,
+		controllerId = controllerPiece.pieceId,
+		coordinatesInvolved = coordinatesInvolved,
+		options = options,
+		controllerStaticId = controllerStaticId or controllerPiece.staticId,
+		duration = duration,
+	}
+	if bookmark then
+		interactions[table.find(interactions, bookmark)] = newInteraction
+	else
+		table.insert(interactions, newInteraction)
+	end
+end
+
+function module.Deploy(kind)
+	
+	if #interactions == 0 then return end
+	
+	playerVisualsFinished = {}
+	
+	for i, player in pairs(game:GetService('Players'):GetPlayers()) do
+		playerVisualsFinished[player] = false
+	end
+	
+	--Determine the timeout
+	local timeout = 3
+	for i,interaction in pairs(interactions) do
+		timeout = timeout + interaction.duration
+	end
+	--Deploy
+	script.Deploy:FireAllClients(interactions, kind)
+	--Wait for players to finish visuals
+	while not AreAllPlayersFinished() and timeout > 0 do
+		wait(1)
+		timeout = timeout - 1
+	end
+	
+	interactions = {}
+end
+
+--DEPLOY FUNCTIONS
+
+local deployFuncs = {}
+
+function deployFuncs.Default(interactions)
+
+	local pieceInteractionQueues = {}
+
+	--Populate the interaction queues
+	for interactionId, interaction in pairs(interactions) do
+		for i, coordinate in pairs(interaction.coordinatesInvolved) do
+			local space = board.GetSpaceAt(coordinate)
+			space.interactionQueue = space.interactionQueue or {}
+			table.insert(space.interactionQueue, interactionId)
+		end
+		pieceInteractionQueues[interaction.controllerId] = pieceInteractionQueues[interaction.controllerId] or {}
+		table.insert(pieceInteractionQueues[interaction.controllerId], interactionId)
+	end
+
+	--Carry out the interactions for each piece
+	local numQueuesFinished = 0
+	local totalQueues = 0
+	for pieceId, pieceInteractionQueue in pairs(pieceInteractionQueues) do
+
+		totalQueues = totalQueues + 1
+		
+		task.spawn(function()
+
+			--Go down the piece interaction queue and perform the interaction functions
+			while #(pieceInteractionQueue) > 0 do
+				
+				local interactionId = pieceInteractionQueue[1]
+				local interaction = interactions[interactionId]
+				local staticPiece = interaction.controllerStaticId and staticPieceDatabase.GetStaticPiece(interaction.controllerStaticId)
+				local interactionVisual = (staticPiece and staticPiece.InteractionVisuals and staticPiece.InteractionVisuals[interaction.action]) or visuals[interaction.action]
+				
+				if not interactionVisual then
+					warn('interaction visual does not exist for piece:' , interaction.action, ', ', staticPiece.State.name)
+					task.wait()
+				else
+
+					--Wait for all the spaces to be ready for interaction
+					repeat
+						local spacesReady = true
+						for i,coordinates in pairs(interaction.coordinatesInvolved) do
+							local space = board.GetSpaceAt(coordinates)
+							if space.interactionQueue[1] ~= interactionId then
+								spacesReady = false
+								break
+							end
+						end
+						if not spacesReady then
+							task.wait()
+						end
+					until spacesReady
+
+					--Perform the interaction
+					interactionVisual(pieceModels.GetPieceModelFromId(pieceId), interaction.options)
+
+					--Dequeue the space interactions
+					for i,coordinates in pairs(interaction.coordinatesInvolved) do
+						local space = board.GetSpaceAt(coordinates)
+						table.remove(space.interactionQueue, 1)
+					end
+
+					--Dequeue the piece interaction
+
+					table.remove(pieceInteractionQueue, 1)
+
+				end
+			end
+
+			numQueuesFinished = numQueuesFinished + 1
+
+
+		end)
+		task.wait()
+	end
+
+	while numQueuesFinished < totalQueues do
+		task.wait()
+	end
+
+	script:WaitForChild('VisualsFinished'):FireServer()
+	
+end
+
+--INITIALIZE
+
+function module.InitializeServer()
+	script.VisualsFinished.OnServerEvent:Connect(function(player)
+		playerVisualsFinished[player] = true
+	end)
+	
+	game:GetService('Players').PlayerRemoving:Connect(function(player)
+		playerVisualsFinished[player] = nil
+	end)
+end
+
+function module.InitializeClient()
+	
+	script:WaitForChild('Deploy').OnClientEvent:Connect(function(interactions, kind)
+		if not kind then kind = 'Default' end
+		deployFuncs[kind](interactions)
+	end)		
+
+	
+end
+
+return module

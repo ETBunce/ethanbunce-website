@@ -17,3 +17,23 @@
     text-align: center;
     margin: 10px;
 }
+
+.my-collapsible-container {
+    background-color: rgb(255, 255, 255);
+}
+
+.collapsible-trigger-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.Collapsible__trigger.is-open svg {
+    transform: rotate(180deg);
+}
+
+.code-text {
+    /* background-color: rgb(24, 22, 109); */
+    border-radius: 6px;
+    margin: 2px;
+}

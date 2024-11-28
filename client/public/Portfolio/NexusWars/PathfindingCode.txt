@@ -1,0 +1,227 @@
+local rs = game:GetService('ReplicatedStorage')
+local gl = script.Parent.Parent
+
+--REQUIRE
+local vectorDirections = require(rs:WaitForChild('Modules'):WaitForChild('VectorDirections'))
+local boardX = require(gl:WaitForChild('BoardX'))
+local board = boardX.regular
+
+function AStar(startSpace : any, goalSpace : any, piece : any)
+	
+	if startSpace == goalSpace then return {startSpace} end
+	
+	local goalSpaces = boardX.GetTraversableSpacesAroundSpace(goalSpace)
+	table.insert(goalSpaces, goalSpace)
+	
+	for i, space in pairs(goalSpaces) do
+		if piece.coordinates == space.coordinates then
+			return {startSpace}
+		end
+	end
+	
+	
+	-----
+	-----
+	-----Pathfinding
+	-----
+	-----
+	
+	local spaceNodes = {}
+	local openNodes = {}
+	
+	----------
+	----------FUNCTIONS
+	----------
+	
+	local function GetSortedDirections(fromSpace)
+
+		--Randomize
+		local randomDirections = {}
+		for i, direction in pairs(vectorDirections.Vector2.Adjacent) do
+			table.insert(randomDirections, math.random(1, #randomDirections + 1), direction)
+		end
+
+		--Get closest goal space
+		local randomNearbySpaces = {}
+		for i, space in pairs(goalSpaces) do
+			table.insert(randomNearbySpaces, math.random(1, #randomNearbySpaces + 1), space)
+		end
+		local closestGoalSpace = goalSpace
+		for i, space in pairs(randomNearbySpaces) do
+			local otherPiece = boardX.GetSpacePieceOnLayer(space, piece.layer)
+			if otherPiece and not otherPiece.stepsRemaining then continue end
+			if boardX.SpaceCountDistance(fromSpace, space) < boardX.SpaceCountDistance(fromSpace, closestGoalSpace) then
+				closestGoalSpace = space
+			end
+		end
+		
+		--Prioritize directions
+		local directionPriorities = {}
+		for i, direction in pairs(randomDirections) do
+			
+			--Check for other space
+			local otherSpace = board.GetSpaceAt(fromSpace.coordinates + direction)
+			if not otherSpace then
+				table.insert(directionPriorities, {direction = direction, priority = 0})
+				continue
+			end
+			
+			--Check for other piece
+			local otherPiece = boardX.GetSpacePieceOnLayer(otherSpace, piece.layer)
+			if otherPiece then
+				table.insert(directionPriorities, {direction = direction, priority = 1})
+				continue
+			end
+			
+			if boardX.SpaceCountDistance(otherSpace, closestGoalSpace) > boardX.SpaceCountDistance(fromSpace, closestGoalSpace) then
+				table.insert(directionPriorities, {direction = direction, priority = 2})
+			else
+				table.insert(directionPriorities, {direction = direction, priority = 3})
+			end
+			
+		end
+		
+		--Sort by priority
+		
+		local sortedDirections = {}
+		
+		table.sort(directionPriorities, function(a0: { direction: Vector2, priority: number }, a1: { direction: Vector2, priority: number }): boolean
+			return a0.priority > a1.priority
+		end)
+		
+		for i, directionInfo in pairs(directionPriorities) do
+			table.insert(sortedDirections, directionInfo.direction)
+		end
+
+		return sortedDirections
+	end
+	
+	local function ChooseBetterNode(nodeA : any, nodeB : any)
+		if nodeA.f < nodeB.f  or (nodeA.f == nodeB.f and nodeA.h < nodeB.h) then
+			return nodeA
+		else
+			return nodeB
+		end
+	end
+	
+	local function NewNode(space : any, parent : any)
+		local node = {}
+		node.space = space
+		node.coordinates = space.coordinates
+		node.parent = parent
+		node.g = (parent and parent.g + 1) or 0
+		node.d = boardX.SpaceCountDistance(space, goalSpace)
+		node.h = node.d
+		if space ~= startSpace and boardX.GetSpacePieceOnLayer(space, piece.layer) and node.g <= piece.stepsRemaining then
+			node.h = node.h + 1
+		end
+		node.f = node.g + node.h
+		node.state = 'Open'
+		
+		spaceNodes[space] = node
+		
+		--queue up the node
+		local lastNode = openNodes[#openNodes]
+		if not lastNode or ChooseBetterNode(node, lastNode) == lastNode then
+			table.insert(openNodes, node)
+		else
+			for i, otherNode in pairs(openNodes) do
+				if ChooseBetterNode(node, otherNode) == node then
+					table.insert(openNodes, i, node)
+					break
+				end
+			end
+		end
+		
+		return node
+	end
+	
+	--Returns true if goal is reached
+	local function EvaluateNode(node : any)
+
+		for i, space in pairs(goalSpaces) do
+			if node.space == space then
+				return true
+			end
+		end
+		
+		node.state = 'Closed'
+		table.remove(openNodes, 1)
+		
+		for i, direction in pairs(GetSortedDirections(node.space)) do
+			
+			---Get the next space and skip invalid spaces
+			local otherSpace = board.GetSpaceAt(node.coordinates + direction)
+			if not otherSpace then continue end
+			
+			if not boardX.IsSpaceInClimbHeightFromSpace(node.space, otherSpace) then continue end
+			if not boardX.PieceCanOccupySpace(piece, otherSpace) then continue end
+			
+			local otherPiece = boardX.GetSpacePieceOnLayer(otherSpace, piece.layer)
+			if otherPiece and
+				(not otherPiece.stepsRemaining or (piece.moveThroughPieceTries == 0 and boardX.SpaceCountDistance(startSpace, otherSpace) <= piece.stepsRemaining))
+			then continue end
+			
+			---
+			
+			--Calculate the next node
+			local otherNode = spaceNodes[otherSpace]
+			if otherNode then
+				if otherNode.state == 'Closed' then continue end
+				--Update the node
+				if otherNode.g > node.g then
+					otherNode.g = node.g + 1
+					otherNode.f = otherNode.g + otherNode.h
+					otherNode.parent = node
+					table.sort(openNodes, function(nodeA, nodeB)
+						return ChooseBetterNode(nodeA, nodeB) == nodeA
+					end)
+				end
+			else
+				--Create the node
+				NewNode(otherSpace, node)
+			end
+			
+		end
+		
+	end
+	
+	----------
+	----------LOOP
+	----------
+
+	NewNode(startSpace)
+	local path = {}
+	local bestGoalNode = openNodes[1]
+	
+	repeat
+		local node = openNodes[1]
+		if node.d < bestGoalNode.d then bestGoalNode = node end
+		local foundPath = EvaluateNode(node)
+		if foundPath then
+			--Found path, build and return the path
+			path = {node.space}
+			while node.parent do
+				node = node.parent
+				table.insert(path, 1, node.space)
+			end
+			return path
+		end
+	until #openNodes == 0
+	
+	--Couldn't find path, build the best alternate path
+	if bestGoalNode.space == startSpace then return {startSpace} end
+	local node = bestGoalNode
+	path = {bestGoalNode.space}
+	while node.parent do
+		node = node.parent
+		table.insert(path, 1, node.space)
+	end
+	
+	return path
+	
+	-----
+	
+end
+
+return AStar

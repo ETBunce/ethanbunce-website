@@ -15,7 +15,7 @@ export interface PortfolioItem {
 export const items = {
     AlgoGauge: AlgoGauge,
     PortfolioSite: PortfolioSite,
-    WerewolfModerator: WerewolfModerator,
     NexusWars: NexusWars,
+    WerewolfModerator: WerewolfModerator,
     OmniTicTacToe: OmniTicTacToe
 }
